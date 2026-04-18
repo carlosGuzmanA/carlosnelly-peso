@@ -1,8 +1,11 @@
-const CACHE = 'mipeso-v1';
+const CACHE = 'mipeso-v2';
+const BASE = self.location.pathname.replace('/sw.js', '');
 const FILES = [
-  '/',
-  '/index.html',
-  '/manifest.json',
+  BASE + '/',
+  BASE + '/index.html',
+  BASE + '/manifest.json',
+  BASE + '/icon-192.png',
+  BASE + '/icon-512.png',
   'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js'
 ];
 
