@@ -1,6 +1,6 @@
 {
-  "name": "Peso Familia Guzmán Antimán",
-  "short_name": "Peso Guzmán Antimán",
+  "name": "Peso Familia Guzmán",
+  "short_name": "Peso Guzmán",
   "description": "Seguimiento de peso para Carlos y Nelly",
   "start_url": "./index.html",
   "scope": "./",
