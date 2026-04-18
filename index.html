@@ -67,7 +67,7 @@
     flex: 1; padding: 14px 8px; font-size: 15px; font-weight: 600;
     text-align: center; cursor: pointer; border: none; background: none;
     color: var(--gray-400); border-bottom: 3px solid transparent;
-    transition: all .15s; -webkit-appearance: none;
+    transition: all .15s; -webkit-appearance: none; appearance: none;
   }
   .tab.active { color: var(--blue); border-bottom-color: var(--blue); }
 
@@ -140,7 +140,7 @@
     color: white; border: none; border-radius: var(--radius);
     font-size: 18px; font-weight: 700; cursor: pointer;
     transition: background .15s, transform .1s;
-    -webkit-appearance: none; box-shadow: var(--shadow-md);
+    -webkit-appearance: none; appearance: none; box-shadow: var(--shadow-md);
     margin-top: 8px;
   }
   .btn-save:active { background: var(--blue-dark); transform: scale(.98); }
@@ -154,21 +154,6 @@
   .stat-card .sc-label { font-size: 12px; color: var(--gray-400); font-weight: 500; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; }
   .stat-card .sc-val   { font-size: 24px; font-weight: 700; color: var(--gray-900); }
   .stat-card .sc-sub   { font-size: 13px; color: var(--gray-400); margin-top: 2px; }
-
-  /* === IMC CARD === */
-  .imc-card {
-    background: white; border-radius: var(--radius);
-    padding: 18px 20px; margin-bottom: 20px;
-    box-shadow: var(--shadow);
-    display: flex; justify-content: space-between; align-items: center;
-  }
-  .imc-card .imc-label { font-size: 12px; color: var(--gray-400); font-weight: 500; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; }
-  .imc-card .imc-val   { font-size: 28px; font-weight: 700; }
-  .imc-card .imc-cat   { font-size: 14px; font-weight: 600; margin-top: 4px; }
-  .imc-normal { color: var(--green); }
-  .imc-bajo   { color: var(--blue); }
-  .imc-sobre  { color: var(--amber); }
-  .imc-obesidad { color: var(--red); }
 
   /* === CHART === */
   .chart-card {
@@ -185,7 +170,10 @@
     overflow: hidden; box-shadow: var(--shadow);
   }
   .hist-item {
-    display: flex; justify-content: space-between; align-items: center;
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    align-items: center;
+    column-gap: 14px;
     padding: 16px 20px; border-bottom: 1px solid var(--gray-100);
   }
   .hist-item:last-child { border-bottom: none; }
@@ -195,6 +183,78 @@
   .hist-right { text-align: right; }
   .hist-peso  { font-size: 20px; font-weight: 700; color: var(--gray-900); }
   .hist-diff  { font-size: 13px; font-weight: 600; margin-top: 2px; }
+  .hist-edit {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    align-self: center;
+    width: 34px;
+    height: 34px;
+    margin-top: 0;
+    padding: 0;
+    border: 1px solid var(--gray-200);
+    border-radius: 999px;
+    background: white;
+    color: var(--gray-600);
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  .hist-edit:active { background: var(--gray-100); }
+
+  /* === EDIT MODAL === */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(17, 24, 39, 0.45);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 1000;
+  }
+  .modal-backdrop.show { display: flex; }
+  .modal-card {
+    width: min(460px, 100%);
+    background: white;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-md);
+    padding: 20px;
+  }
+  .modal-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--gray-900);
+    margin-bottom: 14px;
+  }
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 8px;
+  }
+  .btn-modal {
+    flex: 1;
+    padding: 12px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  .btn-cancel {
+    border: 1px solid var(--gray-200);
+    background: white;
+    color: var(--gray-600);
+  }
+  .btn-confirm {
+    border: none;
+    background: var(--blue);
+    color: white;
+  }
+  .btn-confirm:active { background: var(--blue-dark); }
   .diff-down  { color: var(--green); }
   .diff-up    { color: var(--red); }
 
@@ -236,6 +296,83 @@
     font-size: 14px; font-weight: 700; cursor: pointer;
     white-space: nowrap;
   }
+.motivational-message {
+  margin-bottom: 18px;
+  font-size: 22px;
+  font-weight: 700;
+  text-align: center;
+  border-radius: var(--radius);
+  padding: 16px 10px;
+  background: var(--green-light);
+  color: var(--green);
+  box-shadow: var(--shadow-md);
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: 0.01em;
+}
+.motivational-message.up {
+  background: var(--red-light);
+  color: var(--red);
+}
+.motivational-message.same {
+  background: var(--amber-light);
+  color: var(--amber);
+}
+.motivational-message:empty {
+  display: none;
+}
+
+/* UX para adultos mayores */
+html, body {
+  font-size: 20px;
+}
+.header h1 {
+  font-size: 32px;
+}
+.person-btn .pname {
+  font-size: 22px;
+}
+.person-btn .page {
+  font-size: 16px;
+}
+.btn-save, .btn-install {
+  font-size: 22px;
+  min-height: 56px;
+}
+input, .form-group label {
+  font-size: 22px;
+}
+input {
+  min-height: 56px;
+}
+.tab {
+  font-size: 20px;
+  min-height: 56px;
+}
+.last-card .lc-weight {
+  font-size: 48px;
+}
+.badge {
+  font-size: 22px;
+  min-width: 80px;
+  justify-content: center;
+  display: flex;
+  align-items: center;
+}
+.hist-date, .hist-peso {
+  font-size: 22px;
+}
+.hist-edit {
+  font-size: 22px;
+  width: 44px;
+  height: 44px;
+}
+@media (max-width: 480px) {
+  .header { padding: 14px 8px 0; }
+  .section, .chart-card, .history-card, .last-card, .stat-card { padding-left: 8px; padding-right: 8px; }
+}
 </style>
 </head>
 <body>
@@ -280,14 +417,16 @@
 
       <div id="last-info"></div>
 
+      <div id="motivational-message" class="motivational-message" aria-live="polite"></div>
+
       <div class="section-label">Nuevo registro</div>
       <div class="form-group">
-        <label>Peso en kilogramos</label>
+        <label for="inp-peso">Peso en kilogramos</label>
         <input type="number" id="inp-peso" placeholder="ej. 74.5"
-               step="0.1" min="30" max="250" inputmode="decimal">
+               step="0.1" min="30" max="250" inputmode="decimal" autocomplete="off" autofocus>
       </div>
       <div class="form-group">
-        <label>Fecha</label>
+        <label for="inp-fecha">Fecha</label>
         <input type="date" id="inp-fecha">
       </div>
       <button class="btn-save" onclick="guardar()">Guardar registro</button>
@@ -327,10 +466,30 @@
 </div><!-- /app -->
 
 <div class="toast" id="toast"></div>
+<div class="modal-backdrop" id="edit-modal" role="dialog" aria-modal="true" aria-labelledby="edit-modal-title">
+  <div class="modal-card">
+    <div class="modal-title" id="edit-modal-title">Editar registro</div>
+    <div class="form-group">
+      <label for="edit-fecha">Fecha</label>
+      <input type="date" id="edit-fecha">
+    </div>
+    <div class="form-group">
+      <label for="edit-peso">Peso en kilogramos</label>
+      <input type="number" id="edit-peso" step="0.1" min="30" max="250" inputmode="decimal">
+    </div>
+    <div class="modal-actions">
+      <button type="button" class="btn-modal btn-cancel" id="btn-edit-cancel">Cancelar</button>
+      <button type="button" class="btn-modal btn-confirm" id="btn-edit-save">Guardar cambios</button>
+    </div>
+  </div>
+</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
 const KEY = 'mipeso_v2';
+const IDB_NAME = 'mipeso_db';
+const IDB_STORE = 'app_state';
+const IDB_KEY = 'data';
 const DEFAULTS = {
   carlos: [
     {f:'2024-09-12',p:82.6},{f:'2024-10-02',p:74.9},{f:'2024-10-15',p:73.9},
@@ -344,18 +503,92 @@ const DEFAULTS = {
   ]
 };
 
-function loadData() {
+function cloneDefaults() {
+  return JSON.parse(JSON.stringify(DEFAULTS));
+}
+
+function normalizeData(data) {
+  if (!data || typeof data !== 'object') return cloneDefaults();
+  return {
+    carlos: Array.isArray(data.carlos) ? data.carlos : [],
+    nelly: Array.isArray(data.nelly) ? data.nelly : []
+  };
+}
+
+function loadDataFromLocalStorage() {
   try {
     const s = localStorage.getItem(KEY);
-    return s ? JSON.parse(s) : JSON.parse(JSON.stringify(DEFAULTS));
-  } catch(e) { return JSON.parse(JSON.stringify(DEFAULTS)); }
+    return s ? normalizeData(JSON.parse(s)) : null;
+  } catch(e) { return null; }
 }
-function saveData() { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch(e) {} }
 
-let db = loadData();
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(IDB_NAME, 1);
+    req.onupgradeneeded = () => {
+      const dbi = req.result;
+      if (!dbi.objectStoreNames.contains(IDB_STORE)) dbi.createObjectStore(IDB_STORE);
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function readDataFromIDB() {
+  if (!('indexedDB' in window)) return null;
+  const dbi = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = dbi.transaction(IDB_STORE, 'readonly');
+    const store = tx.objectStore(IDB_STORE);
+    const req = store.get(IDB_KEY);
+    req.onsuccess = () => resolve(req.result ? normalizeData(req.result) : null);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function writeDataToIDB(data) {
+  if (!('indexedDB' in window)) return;
+  const dbi = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = dbi.transaction(IDB_STORE, 'readwrite');
+    const store = tx.objectStore(IDB_STORE);
+    store.put(normalizeData(data), IDB_KEY);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+    tx.onabort = () => reject(tx.error);
+  });
+}
+
+async function loadData() {
+  const fallback = loadDataFromLocalStorage() || cloneDefaults();
+  if (!('indexedDB' in window)) return fallback;
+  try {
+    const idbData = await readDataFromIDB();
+    if (idbData) return idbData;
+    const localData = loadDataFromLocalStorage();
+    const seed = localData || cloneDefaults();
+    await writeDataToIDB(seed);
+    return seed;
+  } catch(e) {
+    return fallback;
+  }
+}
+
+function saveData() {
+  if ('indexedDB' in window) {
+    writeDataToIDB(db).catch(() => {
+      try { localStorage.setItem(KEY, JSON.stringify(db)); } catch(e) {}
+    });
+    return;
+  }
+  try { localStorage.setItem(KEY, JSON.stringify(db)); } catch(e) {}
+}
+
+let db = cloneDefaults();
 let regPerson = 'carlos', progPerson = 'carlos', histPerson = 'carlos';
 let chartInst = null;
 let deferredPrompt = null;
+let editCtx = null;
 
 // PWA install
 window.addEventListener('beforeinstallprompt', e => {
@@ -461,19 +694,13 @@ function guardar() {
   document.getElementById('inp-peso').value = '';
   renderLastInfo();
   showToast('Registro guardado');
+  if (window.navigator && window.navigator.vibrate) {
+    window.navigator.vibrate(80);
+  }
+  document.getElementById('inp-peso').focus();
 }
 
 /* ---- PROGRESO ---- */
-function imcInfo(peso, altura) {
-  const val = peso / (altura * altura);
-  let cat, cls;
-  if (val < 18.5)      { cat = 'Bajo peso';  cls = 'imc-bajo'; }
-  else if (val < 25)   { cat = 'Normal';      cls = 'imc-normal'; }
-  else if (val < 30)   { cat = 'Sobrepeso';   cls = 'imc-sobre'; }
-  else                 { cat = 'Obesidad';    cls = 'imc-obesidad'; }
-  return { val: val.toFixed(1), cat, cls };
-}
-
 function renderProg() {
   const r = db[progPerson];
   const el = document.getElementById('prog-content');
@@ -488,9 +715,6 @@ function renderProg() {
   const cls = total < 0 ? 'down' : total > 0 ? 'up' : 'same';
   const sym = total < 0 ? '▼' : total > 0 ? '▲' : '—';
 
-  const alturas = { carlos: 1.72, nelly: 1.60 };
-  const imc = imcInfo(last.p, alturas[progPerson]);
-
   el.innerHTML = `
     <div class="stats-grid">
       <div class="stat-card">
@@ -500,7 +724,7 @@ function renderProg() {
       </div>
       <div class="stat-card">
         <div class="sc-label">Cambio total</div>
-        <div class="sc-val ${cls === 'down' ? 'imc-normal' : cls === 'up' ? 'imc-obesidad' : ''}">${sym} ${Math.abs(total)} kg</div>
+        <div class="sc-val ${cls === 'down' ? 'diff-down' : cls === 'up' ? 'diff-up' : ''}">${sym} ${Math.abs(total)} kg</div>
         <div class="sc-sub">desde el inicio</div>
       </div>
       <div class="stat-card">
@@ -512,18 +736,6 @@ function renderProg() {
         <div class="sc-label">Registros</div>
         <div class="sc-val">${r.length}</div>
         <div class="sc-sub">pesajes</div>
-      </div>
-    </div>
-
-    <div class="imc-card">
-      <div>
-        <div class="imc-label">IMC</div>
-        <div class="imc-val ${imc.cls}">${imc.val}</div>
-        <div class="imc-cat ${imc.cls}">${imc.cat}</div>
-      </div>
-      <div style="text-align:right">
-        <div style="font-size:13px;color:#9ca3af;margin-bottom:4px">Talla referencia</div>
-        <div style="font-size:17px;font-weight:700;color:#374151">${alturas[progPerson]} m</div>
       </div>
     </div>
 
@@ -585,6 +797,60 @@ function renderChart(r) {
 }
 
 /* ---- HISTORIAL ---- */
+function openEditModal(idx) {
+  const person = histPerson;
+  const all = db[person];
+  const current = all[idx];
+  if (!current) return;
+
+  editCtx = { person, idx };
+  document.getElementById('edit-fecha').value = current.f;
+  document.getElementById('edit-peso').value = current.p.toFixed(1);
+  document.getElementById('edit-modal').classList.add('show');
+}
+
+function closeEditModal() {
+  editCtx = null;
+  document.getElementById('edit-modal').classList.remove('show');
+}
+
+function saveEditModal() {
+  if (!editCtx) return;
+  const { person, idx } = editCtx;
+  const all = db[person];
+  if (!all[idx]) { closeEditModal(); return; }
+
+  const newDate = document.getElementById('edit-fecha').value;
+  const newPesoRaw = document.getElementById('edit-peso').value;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(newDate)) {
+    showToast('Fecha invalida (usa AAAA-MM-DD)');
+    return;
+  }
+  const newPeso = parseFloat(parseFloat(newPesoRaw).toFixed(1));
+  if (!newPeso || isNaN(newPeso) || newPeso <= 0) {
+    showToast('Peso invalido');
+    return;
+  }
+
+  const dupIdx = all.findIndex((x, i) => i !== idx && x.f === newDate);
+  if (dupIdx >= 0) {
+    const ok = confirm('Ya existe un registro en esa fecha. ¿Quieres reemplazarlo?');
+    if (!ok) return;
+    all[dupIdx].p = newPeso;
+    all.splice(idx, 1);
+  } else {
+    all[idx] = { f: newDate, p: newPeso };
+  }
+
+  all.sort((a,b) => a.f.localeCompare(b.f));
+  saveData();
+  renderLastInfo();
+  if (progPerson === person) renderProg();
+  renderHist();
+  closeEditModal();
+  showToast('Registro actualizado');
+}
+
 function renderHist() {
   const r = [...db[histPerson]].reverse();
   const all = db[histPerson];
@@ -611,6 +877,7 @@ function renderHist() {
         <div class="hist-peso">${item.p.toFixed(1)} kg</div>
         ${diffHTML}
       </div>
+      <button type="button" class="hist-edit" data-idx="${origIdx}" aria-label="Editar registro">&#9998;</button>
     </div>`;
   }).join('');
   el.innerHTML = `<div class="history-card">${items}</div>`;
@@ -627,7 +894,29 @@ function showToast(msg) {
 /* ---- INIT ---- */
 const today = new Date().toISOString().split('T')[0];
 document.getElementById('inp-fecha').value = today;
-renderLastInfo();
+document.getElementById('inp-peso').focus();
+document.getElementById('hist-content').addEventListener('click', (e) => {
+  const btn = e.target.closest('.hist-edit');
+  if (!btn) return;
+  const idx = Number(btn.dataset.idx);
+  if (Number.isNaN(idx)) return;
+  openEditModal(idx);
+});
+document.getElementById('btn-edit-cancel').addEventListener('click', closeEditModal);
+document.getElementById('btn-edit-save').addEventListener('click', saveEditModal);
+document.getElementById('edit-modal').addEventListener('click', (e) => {
+  if (e.target.id === 'edit-modal') closeEditModal();
+});
+
+async function initData() {
+  db = await loadData();
+  renderLastInfo();
+  renderHist();
+  const active = document.querySelector('.tab.active');
+  if (active && active.textContent.trim() === 'Progreso') renderProg();
+}
+
+initData();
 </script>
 </body>
 </html>
