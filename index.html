@@ -479,6 +479,7 @@ input {
     </div>
     <div class="modal-actions">
       <button type="button" class="btn-modal btn-cancel" id="btn-edit-cancel">Cancelar</button>
+      <button type="button" class="btn-modal btn-danger" id="btn-edit-delete" style="background:var(--red);color:white;">Eliminar</button>
       <button type="button" class="btn-modal btn-confirm" id="btn-edit-save">Guardar cambios</button>
     </div>
   </div>
@@ -851,6 +852,21 @@ function saveEditModal() {
   showToast('Registro actualizado');
 }
 
+function deleteEditModal() {
+  if (!editCtx) return;
+  const { person, idx } = editCtx;
+  const all = db[person];
+  if (!all[idx]) { closeEditModal(); return; }
+  if (!confirm('¿Eliminar este registro de peso? Esta acción no se puede deshacer.')) return;
+  all.splice(idx, 1);
+  saveData();
+  renderLastInfo();
+  if (progPerson === person) renderProg();
+  renderHist();
+  closeEditModal();
+  showToast('Registro eliminado');
+}
+
 function renderHist() {
   const r = [...db[histPerson]].reverse();
   const all = db[histPerson];
@@ -904,6 +920,7 @@ document.getElementById('hist-content').addEventListener('click', (e) => {
 });
 document.getElementById('btn-edit-cancel').addEventListener('click', closeEditModal);
 document.getElementById('btn-edit-save').addEventListener('click', saveEditModal);
+document.getElementById('btn-edit-delete').addEventListener('click', deleteEditModal);
 document.getElementById('edit-modal').addEventListener('click', (e) => {
   if (e.target.id === 'edit-modal') closeEditModal();
 });
