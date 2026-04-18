@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#1a56db">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Mi Peso">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Mi Peso</title>
+<style>
+  :root {
+    --blue: #1a56db;
+    --blue-light: #ebf0ff;
+    --blue-dark: #1140a8;
+    --pink: #be185d;
+    --pink-light: #fce7f3;
+    --green: #065f46;
+    --green-light: #d1fae5;
+    --red: #991b1b;
+    --red-light: #fee2e2;
+    --amber: #92400e;
+    --amber-light: #fef3c7;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-400: #9ca3af;
+    --gray-600: #4b5563;
+    --gray-800: #1f2937;
+    --gray-900: #111827;
+    --radius: 16px;
+    --radius-sm: 10px;
+    --shadow: 0 1px 3px rgba(0,0,0,.1), 0 1px 2px rgba(0,0,0,.06);
+    --shadow-md: 0 4px 6px rgba(0,0,0,.07), 0 2px 4px rgba(0,0,0,.06);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--gray-50);
+    color: var(--gray-900);
+    font-size: 16px;
+    line-height: 1.5;
+    overflow-x: hidden;
+  }
+
+  /* === LAYOUT === */
+  .app { display: flex; flex-direction: column; min-height: 100vh; min-height: 100dvh; }
+
+  /* === HEADER === */
+  .header {
+    background: white;
+    padding: 20px 20px 0;
+    border-bottom: 1px solid var(--gray-200);
+  }
+  .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+  .header h1 { font-size: 26px; font-weight: 700; color: var(--gray-900); letter-spacing: -.5px; }
+  .header p { font-size: 14px; color: var(--gray-400); margin-bottom: 16px; }
+
+  /* === TABS === */
+  .tabs { display: flex; gap: 0; }
+  .tab {
+    flex: 1; padding: 14px 8px; font-size: 15px; font-weight: 600;
+    text-align: center; cursor: pointer; border: none; background: none;
+    color: var(--gray-400); border-bottom: 3px solid transparent;
+    transition: all .15s; -webkit-appearance: none;
+  }
+  .tab.active { color: var(--blue); border-bottom-color: var(--blue); }
+
+  /* === MAIN CONTENT === */
+  .content { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  .section { display: none; padding: 20px; }
+  .section.active { display: block; }
+
+  /* === PERSON SELECTOR === */
+  .person-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+  .person-btn {
+    padding: 16px 12px; border: 2px solid var(--gray-200);
+    border-radius: var(--radius); cursor: pointer;
+    text-align: center; background: white;
+    transition: all .15s; box-shadow: var(--shadow);
+  }
+  .person-btn.carlos.active { border-color: var(--blue); background: var(--blue-light); }
+  .person-btn.nelly.active  { border-color: var(--pink); background: var(--pink-light); }
+
+  .avatar {
+    width: 56px; height: 56px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; font-weight: 700; margin: 0 auto 10px;
+  }
+  .avatar.c { background: #dbeafe; color: var(--blue); }
+  .avatar.n { background: var(--pink-light); color: var(--pink); }
+
+  .person-btn .pname { font-size: 17px; font-weight: 700; color: var(--gray-900); }
+  .person-btn .page  { font-size: 13px; color: var(--gray-400); margin-top: 2px; }
+
+  /* === LAST RECORD CARD === */
+  .last-card {
+    background: white; border-radius: var(--radius);
+    padding: 18px 20px; margin-bottom: 20px;
+    box-shadow: var(--shadow-md);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .last-card .lc-label { font-size: 12px; color: var(--gray-400); font-weight: 500; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 4px; }
+  .last-card .lc-weight { font-size: 36px; font-weight: 700; color: var(--gray-900); line-height: 1; }
+  .last-card .lc-date   { font-size: 13px; color: var(--gray-400); margin-top: 4px; }
+  .badge {
+    padding: 6px 12px; border-radius: 100px;
+    font-size: 14px; font-weight: 700;
+  }
+  .badge.down { background: var(--green-light); color: var(--green); }
+  .badge.up   { background: var(--red-light);   color: var(--red); }
+  .badge.same { background: var(--gray-100);     color: var(--gray-600); }
+
+  /* === FORM === */
+  .form-group { margin-bottom: 20px; }
+  .form-group label {
+    display: block; font-size: 14px; font-weight: 600;
+    color: var(--gray-600); margin-bottom: 8px;
+  }
+  .form-group input {
+    width: 100%; padding: 16px; font-size: 20px; font-weight: 600;
+    border: 2px solid var(--gray-200); border-radius: var(--radius-sm);
+    background: white; color: var(--gray-900);
+    -webkit-appearance: none; appearance: none;
+    transition: border-color .15s;
+  }
+  .form-group input:focus {
+    outline: none; border-color: var(--blue);
+    box-shadow: 0 0 0 4px rgba(26,86,219,.1);
+  }
+  .form-group input[type="date"] { font-size: 17px; }
+
+  .btn-save {
+    width: 100%; padding: 18px; background: var(--blue);
+    color: white; border: none; border-radius: var(--radius);
+    font-size: 18px; font-weight: 700; cursor: pointer;
+    transition: background .15s, transform .1s;
+    -webkit-appearance: none; box-shadow: var(--shadow-md);
+    margin-top: 8px;
+  }
+  .btn-save:active { background: var(--blue-dark); transform: scale(.98); }
+
+  /* === STATS GRID === */
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+  .stat-card {
+    background: white; border-radius: var(--radius);
+    padding: 16px; box-shadow: var(--shadow);
+  }
+  .stat-card .sc-label { font-size: 12px; color: var(--gray-400); font-weight: 500; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; }
+  .stat-card .sc-val   { font-size: 24px; font-weight: 700; color: var(--gray-900); }
+  .stat-card .sc-sub   { font-size: 13px; color: var(--gray-400); margin-top: 2px; }
+
+  /* === IMC CARD === */
+  .imc-card {
+    background: white; border-radius: var(--radius);
+    padding: 18px 20px; margin-bottom: 20px;
+    box-shadow: var(--shadow);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .imc-card .imc-label { font-size: 12px; color: var(--gray-400); font-weight: 500; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; }
+  .imc-card .imc-val   { font-size: 28px; font-weight: 700; }
+  .imc-card .imc-cat   { font-size: 14px; font-weight: 600; margin-top: 4px; }
+  .imc-normal { color: var(--green); }
+  .imc-bajo   { color: var(--blue); }
+  .imc-sobre  { color: var(--amber); }
+  .imc-obesidad { color: var(--red); }
+
+  /* === CHART === */
+  .chart-card {
+    background: white; border-radius: var(--radius);
+    padding: 20px 16px 16px; margin-bottom: 20px;
+    box-shadow: var(--shadow);
+  }
+  .chart-title { font-size: 14px; font-weight: 600; color: var(--gray-600); margin-bottom: 16px; }
+  .chart-wrap  { position: relative; width: 100%; height: 240px; }
+
+  /* === HISTORY === */
+  .history-card {
+    background: white; border-radius: var(--radius);
+    overflow: hidden; box-shadow: var(--shadow);
+  }
+  .hist-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 16px 20px; border-bottom: 1px solid var(--gray-100);
+  }
+  .hist-item:last-child { border-bottom: none; }
+  .hist-item:active { background: var(--gray-50); }
+  .hist-date  { font-size: 15px; font-weight: 600; color: var(--gray-900); }
+  .hist-sub   { font-size: 13px; color: var(--gray-400); margin-top: 2px; }
+  .hist-right { text-align: right; }
+  .hist-peso  { font-size: 20px; font-weight: 700; color: var(--gray-900); }
+  .hist-diff  { font-size: 13px; font-weight: 600; margin-top: 2px; }
+  .diff-down  { color: var(--green); }
+  .diff-up    { color: var(--red); }
+
+  /* === SECTION LABEL === */
+  .section-label {
+    font-size: 12px; font-weight: 600; color: var(--gray-400);
+    text-transform: uppercase; letter-spacing: .08em;
+    margin-bottom: 12px; margin-top: 4px;
+  }
+
+  /* === TOAST === */
+  .toast {
+    position: fixed; bottom: 32px; left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--gray-900); color: white;
+    padding: 14px 24px; border-radius: 100px;
+    font-size: 15px; font-weight: 600;
+    opacity: 0; transition: all .25s; pointer-events: none; z-index: 999;
+    white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* === EMPTY === */
+  .empty { text-align: center; padding: 48px 20px; color: var(--gray-400); font-size: 16px; }
+  .empty .icon { font-size: 48px; margin-bottom: 12px; }
+
+  /* === INSTALL BANNER === */
+  .install-banner {
+    background: var(--blue-light); border: 1.5px solid #bfdbfe;
+    border-radius: var(--radius-sm); padding: 14px 16px;
+    margin-bottom: 20px; display: none;
+    align-items: center; gap: 12px;
+  }
+  .install-banner.show { display: flex; }
+  .install-banner p { flex: 1; font-size: 14px; color: #1e40af; font-weight: 500; }
+  .btn-install {
+    padding: 10px 16px; background: var(--blue); color: white;
+    border: none; border-radius: var(--radius-sm);
+    font-size: 14px; font-weight: 700; cursor: pointer;
+    white-space: nowrap;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-top">
+      <h1>Mi Peso</h1>
+    </div>
+    <p>Carlos &amp; Nelly</p>
+    <div class="tabs">
+      <button class="tab active" onclick="showTab('registrar')">Registrar</button>
+      <button class="tab" onclick="showTab('progreso')">Progreso</button>
+      <button class="tab" onclick="showTab('historial')">Historial</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- TAB: REGISTRAR -->
+    <div id="tab-registrar" class="section active">
+
+      <div id="install-banner" class="install-banner">
+        <p>Instala la app para acceder sin internet</p>
+        <button class="btn-install" onclick="installApp()">Instalar</button>
+      </div>
+
+      <div class="section-label">Quien se pesa</div>
+      <div class="person-grid">
+        <button class="person-btn carlos active" id="btn-carlos" onclick="selectPerson('carlos')">
+          <div class="avatar c">C</div>
+          <div class="pname">Carlos</div>
+          <div class="page">62 anos</div>
+        </button>
+        <button class="person-btn nelly" id="btn-nelly" onclick="selectPerson('nelly')">
+          <div class="avatar n">N</div>
+          <div class="pname">Nelly</div>
+          <div class="page">59 anos</div>
+        </button>
+      </div>
+
+      <div id="last-info"></div>
+
+      <div class="section-label">Nuevo registro</div>
+      <div class="form-group">
+        <label>Peso en kilogramos</label>
+        <input type="number" id="inp-peso" placeholder="ej. 74.5"
+               step="0.1" min="30" max="250" inputmode="decimal">
+      </div>
+      <div class="form-group">
+        <label>Fecha</label>
+        <input type="date" id="inp-fecha">
+      </div>
+      <button class="btn-save" onclick="guardar()">Guardar registro</button>
+    </div>
+
+    <!-- TAB: PROGRESO -->
+    <div id="tab-progreso" class="section">
+      <div class="person-grid">
+        <button class="person-btn carlos active" id="prog-carlos" onclick="selectProg('carlos')">
+          <div class="avatar c">C</div>
+          <div class="pname">Carlos</div>
+        </button>
+        <button class="person-btn nelly" id="prog-nelly" onclick="selectProg('nelly')">
+          <div class="avatar n">N</div>
+          <div class="pname">Nelly</div>
+        </button>
+      </div>
+      <div id="prog-content"></div>
+    </div>
+
+    <!-- TAB: HISTORIAL -->
+    <div id="tab-historial" class="section">
+      <div class="person-grid">
+        <button class="person-btn carlos active" id="hist-carlos" onclick="selectHist('carlos')">
+          <div class="avatar c">C</div>
+          <div class="pname">Carlos</div>
+        </button>
+        <button class="person-btn nelly" id="hist-nelly" onclick="selectHist('nelly')">
+          <div class="avatar n">N</div>
+          <div class="pname">Nelly</div>
+        </button>
+      </div>
+      <div id="hist-content"></div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /app -->
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const KEY = 'mipeso_v2';
+const DEFAULTS = {
+  carlos: [
+    {f:'2024-09-12',p:82.6},{f:'2024-10-02',p:74.9},{f:'2024-10-15',p:73.9},
+    {f:'2024-10-27',p:74.6},{f:'2024-11-30',p:74.1},{f:'2024-12-15',p:75.2},
+    {f:'2024-12-30',p:74.6},{f:'2025-01-15',p:73.3},{f:'2025-01-30',p:74.8}
+  ],
+  nelly: [
+    {f:'2024-09-12',p:87.3},{f:'2024-10-02',p:81.6},{f:'2024-10-15',p:80.2},
+    {f:'2024-10-27',p:80.4},{f:'2024-11-30',p:80.3},{f:'2024-12-15',p:80.1},
+    {f:'2024-12-30',p:80.0},{f:'2025-01-15',p:80.3},{f:'2025-01-30',p:81.1}
+  ]
+};
+
+function loadData() {
+  try {
+    const s = localStorage.getItem(KEY);
+    return s ? JSON.parse(s) : JSON.parse(JSON.stringify(DEFAULTS));
+  } catch(e) { return JSON.parse(JSON.stringify(DEFAULTS)); }
+}
+function saveData() { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch(e) {} }
+
+let db = loadData();
+let regPerson = 'carlos', progPerson = 'carlos', histPerson = 'carlos';
+let chartInst = null;
+let deferredPrompt = null;
+
+// PWA install
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('install-banner').classList.add('show');
+});
+function installApp() {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(() => {
+    deferredPrompt = null;
+    document.getElementById('install-banner').classList.remove('show');
+  });
+}
+
+// Service Worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+
+function fmt(dateStr) {
+  const [y,m,d] = dateStr.split('-');
+  const months = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  return `${parseInt(d)} ${months[parseInt(m)-1]} ${y}`;
+}
+
+function fmtShort(dateStr) {
+  const [y,m,d] = dateStr.split('-');
+  return `${d}/${m}`;
+}
+
+/* ---- TABS ---- */
+function showTab(t) {
+  ['registrar','progreso','historial'].forEach(id => {
+    document.getElementById('tab-'+id).classList.remove('active');
+  });
+  document.querySelectorAll('.tab').forEach((b,i) => {
+    b.classList.toggle('active', ['registrar','progreso','historial'][i] === t);
+  });
+  document.getElementById('tab-'+t).classList.add('active');
+  if (t === 'progreso') renderProg();
+  if (t === 'historial') renderHist();
+}
+
+/* ---- PERSON SELECT ---- */
+function selectPerson(p) {
+  regPerson = p;
+  document.getElementById('btn-carlos').className = 'person-btn carlos' + (p==='carlos'?' active':'');
+  document.getElementById('btn-nelly').className  = 'person-btn nelly'  + (p==='nelly' ?' active':'');
+  renderLastInfo();
+}
+function selectProg(p) {
+  progPerson = p;
+  document.getElementById('prog-carlos').className = 'person-btn carlos' + (p==='carlos'?' active':'');
+  document.getElementById('prog-nelly').className  = 'person-btn nelly'  + (p==='nelly' ?' active':'');
+  renderProg();
+}
+function selectHist(p) {
+  histPerson = p;
+  document.getElementById('hist-carlos').className = 'person-btn carlos' + (p==='carlos'?' active':'');
+  document.getElementById('hist-nelly').className  = 'person-btn nelly'  + (p==='nelly' ?' active':'');
+  renderHist();
+}
+
+/* ---- LAST INFO ---- */
+function renderLastInfo() {
+  const r = db[regPerson];
+  const el = document.getElementById('last-info');
+  if (!r.length) { el.innerHTML = ''; return; }
+  const last = r[r.length-1];
+  const prev = r.length > 1 ? r[r.length-2] : null;
+  let badgeHTML = '';
+  if (prev) {
+    const d = (last.p - prev.p).toFixed(1);
+    const cls = d < 0 ? 'down' : d > 0 ? 'up' : 'same';
+    const sym = d < 0 ? '▼' : d > 0 ? '▲' : '—';
+    badgeHTML = `<div class="badge ${cls}">${sym} ${Math.abs(d)} kg</div>`;
+  }
+  el.innerHTML = `
+    <div class="last-card">
+      <div>
+        <div class="lc-label">Ultimo registro</div>
+        <div class="lc-weight">${last.p.toFixed(1)} kg</div>
+        <div class="lc-date">${fmt(last.f)}</div>
+      </div>
+      ${badgeHTML}
+    </div>`;
+}
+
+/* ---- GUARDAR ---- */
+function guardar() {
+  const pv = document.getElementById('inp-peso').value;
+  const fv = document.getElementById('inp-fecha').value;
+  if (!pv || isNaN(pv) || pv <= 0) { showToast('Ingresa un peso valido'); return; }
+  if (!fv) { showToast('Selecciona la fecha'); return; }
+  const peso = parseFloat(parseFloat(pv).toFixed(1));
+  const exists = db[regPerson].findIndex(x => x.f === fv);
+  if (exists >= 0) db[regPerson][exists].p = peso;
+  else db[regPerson].push({ f: fv, p: peso });
+  db[regPerson].sort((a,b) => a.f.localeCompare(b.f));
+  saveData();
+  document.getElementById('inp-peso').value = '';
+  renderLastInfo();
+  showToast('Registro guardado');
+}
+
+/* ---- PROGRESO ---- */
+function imcInfo(peso, altura) {
+  const val = peso / (altura * altura);
+  let cat, cls;
+  if (val < 18.5)      { cat = 'Bajo peso';  cls = 'imc-bajo'; }
+  else if (val < 25)   { cat = 'Normal';      cls = 'imc-normal'; }
+  else if (val < 30)   { cat = 'Sobrepeso';   cls = 'imc-sobre'; }
+  else                 { cat = 'Obesidad';    cls = 'imc-obesidad'; }
+  return { val: val.toFixed(1), cat, cls };
+}
+
+function renderProg() {
+  const r = db[progPerson];
+  const el = document.getElementById('prog-content');
+  if (!r.length) {
+    el.innerHTML = '<div class="empty"><div class="icon">&#128200;</div><p>Sin registros todavia</p></div>';
+    if (chartInst) { chartInst.destroy(); chartInst = null; }
+    return;
+  }
+  const first = r[0], last = r[r.length-1];
+  const total = (last.p - first.p).toFixed(1);
+  const min = Math.min(...r.map(x => x.p)).toFixed(1);
+  const cls = total < 0 ? 'down' : total > 0 ? 'up' : 'same';
+  const sym = total < 0 ? '▼' : total > 0 ? '▲' : '—';
+
+  const alturas = { carlos: 1.72, nelly: 1.60 };
+  const imc = imcInfo(last.p, alturas[progPerson]);
+
+  el.innerHTML = `
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="sc-label">Peso actual</div>
+        <div class="sc-val">${last.p.toFixed(1)} kg</div>
+        <div class="sc-sub">${fmt(last.f)}</div>
+      </div>
+      <div class="stat-card">
+        <div class="sc-label">Cambio total</div>
+        <div class="sc-val ${cls === 'down' ? 'imc-normal' : cls === 'up' ? 'imc-obesidad' : ''}">${sym} ${Math.abs(total)} kg</div>
+        <div class="sc-sub">desde el inicio</div>
+      </div>
+      <div class="stat-card">
+        <div class="sc-label">Minimo</div>
+        <div class="sc-val">${min} kg</div>
+        <div class="sc-sub">mejor marca</div>
+      </div>
+      <div class="stat-card">
+        <div class="sc-label">Registros</div>
+        <div class="sc-val">${r.length}</div>
+        <div class="sc-sub">pesajes</div>
+      </div>
+    </div>
+
+    <div class="imc-card">
+      <div>
+        <div class="imc-label">IMC</div>
+        <div class="imc-val ${imc.cls}">${imc.val}</div>
+        <div class="imc-cat ${imc.cls}">${imc.cat}</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:13px;color:#9ca3af;margin-bottom:4px">Talla referencia</div>
+        <div style="font-size:17px;font-weight:700;color:#374151">${alturas[progPerson]} m</div>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-title">Evolucion del peso</div>
+      <div class="chart-wrap">
+        <canvas id="progChart" role="img" aria-label="Grafico de evolucion de peso de ${progPerson}">Datos de peso.</canvas>
+      </div>
+    </div>`;
+
+  setTimeout(() => renderChart(r), 50);
+}
+
+function renderChart(r) {
+  if (chartInst) { chartInst.destroy(); chartInst = null; }
+  const canvas = document.getElementById('progChart');
+  if (!canvas) return;
+
+  const color = progPerson === 'carlos' ? '#1a56db' : '#be185d';
+  const fill  = progPerson === 'carlos' ? 'rgba(26,86,219,.1)' : 'rgba(190,24,93,.1)';
+
+  chartInst = new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels: r.map(x => fmtShort(x.f)),
+      datasets: [{
+        label: 'Peso (kg)',
+        data: r.map(x => x.p),
+        borderColor: color,
+        backgroundColor: fill,
+        borderWidth: 2.5,
+        pointRadius: 5,
+        pointBackgroundColor: color,
+        pointBorderColor: 'white',
+        pointBorderWidth: 2,
+        fill: true,
+        tension: 0.35
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: c => `${c.parsed.y.toFixed(1)} kg` } }
+      },
+      scales: {
+        x: {
+          ticks: { font: { size: 12 }, maxRotation: 45, autoSkip: true, maxTicksLimit: 7, color: '#9ca3af' },
+          grid: { color: 'rgba(0,0,0,.05)' }
+        },
+        y: {
+          ticks: { font: { size: 12 }, color: '#9ca3af', callback: v => v.toFixed(0) + ' kg' },
+          grid: { color: 'rgba(0,0,0,.05)' }
+        }
+      }
+    }
+  });
+}
+
+/* ---- HISTORIAL ---- */
+function renderHist() {
+  const r = [...db[histPerson]].reverse();
+  const all = db[histPerson];
+  const el = document.getElementById('hist-content');
+  if (!r.length) {
+    el.innerHTML = '<div class="empty"><div class="icon">&#128196;</div><p>Sin registros todavia</p></div>';
+    return;
+  }
+  const items = r.map((item, i) => {
+    const origIdx = all.length - 1 - i;
+    const prev = origIdx > 0 ? all[origIdx-1] : null;
+    let diffHTML = '';
+    if (prev) {
+      const d = (item.p - prev.p).toFixed(1);
+      const cls = d < 0 ? 'diff-down' : d > 0 ? 'diff-up' : '';
+      const sym = d < 0 ? '▼' : d > 0 ? '▲' : '—';
+      diffHTML = `<div class="hist-diff ${cls}">${sym} ${Math.abs(d)} kg</div>`;
+    }
+    return `<div class="hist-item">
+      <div>
+        <div class="hist-date">${fmt(item.f)}</div>
+      </div>
+      <div class="hist-right">
+        <div class="hist-peso">${item.p.toFixed(1)} kg</div>
+        ${diffHTML}
+      </div>
+    </div>`;
+  }).join('');
+  el.innerHTML = `<div class="history-card">${items}</div>`;
+}
+
+/* ---- TOAST ---- */
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+/* ---- INIT ---- */
+const today = new Date().toISOString().split('T')[0];
+document.getElementById('inp-fecha').value = today;
+renderLastInfo();
+</script>
+</body>
+</html>
