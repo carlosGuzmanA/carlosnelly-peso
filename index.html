@@ -395,7 +395,7 @@ input {
   <!-- HEADER -->
   <div class="header">
     <div class="header-top">
-      <h1>Peso Familia Guzmán</h1>
+      <h1>Peso Familia Guzmán <span id="app-version" style="font-size:13px;font-weight:500;color:var(--gray-400);vertical-align:middle;"></span></h1>
     </div>
     <div class="tabs">
       <button class="tab active" onclick="showTab('registrar')">Registrar</button>
@@ -580,6 +580,7 @@ function initFirebase() {
 }
 
 // ============================================================
+const APP_VERSION = 'v11';
 const KEY = 'mipeso_v2';
 const IDB_NAME = 'mipeso_db';
 const IDB_STORE = 'app_state';
@@ -1024,6 +1025,7 @@ document.getElementById('edit-modal').addEventListener('click', (e) => {
 });
 
 async function initData() {
+  document.getElementById('app-version').textContent = APP_VERSION;
   db = await loadData();
   renderLastInfo();
   renderHist();
