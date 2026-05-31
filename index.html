@@ -457,7 +457,7 @@ input {
       <button class="tab active" onclick="showTab('registrar')">Registrar</button>
       <button class="tab" onclick="showTab('progreso')">Progreso</button>
       <button class="tab" onclick="showTab('historial')">Historial</button>
-      <button class="tab" id="tab-btn-errores" onclick="showTab('errores')">Errores</button>
+      <button class="tab" id="tab-btn-errores" onclick="showTab('errores')" style="display:none;">Errores</button>
     </div>
   </div>
 
@@ -613,10 +613,16 @@ function updateErrorBadge() {
   const old = btn.querySelector('.tab-badge');
   if (old) old.remove();
   if (errorLog.length > 0) {
+    btn.style.display = '';
     const badge = document.createElement('span');
     badge.className = 'tab-badge';
     badge.textContent = errorLog.length;
     btn.appendChild(badge);
+  } else {
+    btn.style.display = 'none';
+    if (document.getElementById('tab-errores').classList.contains('active')) {
+      showTab('registrar');
+    }
   }
 }
 
@@ -765,7 +771,7 @@ function initFirebase() {
 }
 
 // ============================================================
-const APP_VERSION = 'v13';
+const APP_VERSION = 'v16';
 const KEY = 'mipeso_v2';
 const IDB_NAME = 'mipeso_db';
 const IDB_STORE = 'app_state';
