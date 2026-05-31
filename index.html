@@ -373,10 +373,24 @@ input {
   .header { padding: 14px 8px 0; }
   .section, .chart-card, .history-card, .last-card, .stat-card { padding-left: 8px; padding-right: 8px; }
 }
+
+/* === SYNC INDICATOR === */
+.sync-dot {
+  position: fixed; bottom: 16px; right: 16px;
+  width: 10px; height: 10px; border-radius: 50%;
+  background: transparent;
+  transition: background .3s;
+  z-index: 900;
+}
+.sync-dot.synced  { background: #10b981; }
+.sync-dot.syncing { background: #f59e0b; animation: pulse-dot 1.2s infinite; }
+@keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:.3} }
 </style>
 </head>
 <body>
 <div class="app">
+
+  <div class="sync-dot" id="sync-dot"></div>
 
   <!-- HEADER -->
   <div class="header">
@@ -483,8 +497,89 @@ input {
   </div>
 </div>
 
+<!-- Firebase SDK (compat) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
+// ============================================================
+// FIREBASE CONFIG — Reemplaza estos valores con los de tu
+// proyecto en https://console.firebase.google.com
+// ============================================================
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyBHoXQjCVugndWLXv7iQZJhUOqHNxOVs8o",
+  authDomain: "carlosnelly-peso.firebaseapp.com",
+  projectId: "carlosnelly-peso",
+  storageBucket: "carlosnelly-peso.firebasestorage.app",
+  messagingSenderId: "490399842347",
+  appId: "1:490399842347:web:7c3b4fccffa737b860aa6e"
+};
+
+// ID único de esta familia — no lo compartas públicamente.
+// Puedes cambiarlo por cualquier texto largo y único.
+const FAMILIA_DOC_ID = "guzman-familia-peso-2024";
+
+let fbStore = null;
+
+function isFirebaseConfigured() {
+  return !FIREBASE_CONFIG.apiKey.startsWith('REEMPLAZA');
+}
+
+function setSyncDot(state) {
+  const dot = document.getElementById('sync-dot');
+  if (!dot) return;
+  dot.className = 'sync-dot' + (state === 'synced' ? ' synced' : state === 'syncing' ? ' syncing' : '');
+}
+
+async function loadFromFirestore() {
+  if (!fbStore) return null;
+  try {
+    setSyncDot('syncing');
+    const snap = await fbStore.doc(`familias/${FAMILIA_DOC_ID}`).get();
+    setSyncDot('synced');
+    if (snap.exists()) return normalizeData(snap.data());
+    // Primera vez: sube los datos locales que ya existen
+    await fbStore.doc(`familias/${FAMILIA_DOC_ID}`).set(normalizeData(db));
+    showToast('Datos guardados en la nube');
+    setSyncDot('synced');
+    return null; // ya tiene db cargada
+  } catch(e) {
+    setSyncDot('');
+    return null;
+  }
+}
+
+async function saveToFirestore(data) {
+  if (!fbStore) return;
+  setSyncDot('syncing');
+  try {
+    await fbStore.doc(`familias/${FAMILIA_DOC_ID}`).set(normalizeData(data));
+    setSyncDot('synced');
+  } catch(e) {
+    setSyncDot('');
+  }
+}
+
+function initFirebase() {
+  if (!isFirebaseConfigured()) return;
+  try {
+    firebase.initializeApp(FIREBASE_CONFIG);
+    fbStore = firebase.firestore();
+    loadFromFirestore().then(cloudData => {
+      if (!cloudData) return;
+      db = cloudData;
+      saveLocalOnly();
+      renderLastInfo();
+      renderHist();
+      const active = document.querySelector('.tab.active');
+      if (active && active.textContent.trim() === 'Progreso') renderProg();
+    });
+  } catch(e) {
+    console.warn('Firebase init error:', e);
+  }
+}
+
+// ============================================================
 const KEY = 'mipeso_v2';
 const IDB_NAME = 'mipeso_db';
 const IDB_STORE = 'app_state';
@@ -573,7 +668,7 @@ async function loadData() {
   }
 }
 
-function saveData() {
+function saveLocalOnly() {
   if ('indexedDB' in window) {
     writeDataToIDB(db).catch(() => {
       try { localStorage.setItem(KEY, JSON.stringify(db)); } catch(e) {}
@@ -581,6 +676,11 @@ function saveData() {
     return;
   }
   try { localStorage.setItem(KEY, JSON.stringify(db)); } catch(e) {}
+}
+
+function saveData() {
+  saveLocalOnly();
+  saveToFirestore(db); // no-op si no hay sesión iniciada
 }
 
 let db = cloneDefaults();
@@ -929,6 +1029,7 @@ async function initData() {
   renderHist();
   const active = document.querySelector('.tab.active');
   if (active && active.textContent.trim() === 'Progreso') renderProg();
+  initFirebase(); // inicia Firebase después de tener los datos locales listos
 }
 
 initData();
