@@ -549,26 +549,36 @@ async function loadFromFirestore() {
   if (!fbStore) return null;
   try {
     setSyncDot('syncing');
+    console.log('[sync] leyendo Firestore...');
+    console.log('[sync] local carlos:', db.carlos.length, 'nelly:', db.nelly.length);
     const snap = await fbStore.doc(`familias/${FAMILIA_DOC_ID}`).get();
-    if (snap.exists()) {
+    console.log('[sync] doc existe:', snap.exists);
+    if (snap.exists) {
       const cloudData = normalizeData(snap.data());
+      console.log('[sync] nube carlos:', cloudData.carlos.length, 'nelly:', cloudData.nelly.length);
       const merged = mergeData(db, cloudData);
-      const totalCloud   = cloudData.carlos.length + cloudData.nelly.length;
-      const totalMerged  = merged.carlos.length    + merged.nelly.length;
-      // Si el merge agregó registros que no estaban en la nube, subir
+      console.log('[sync] merged carlos:', merged.carlos.length, 'nelly:', merged.nelly.length);
+      const totalCloud  = cloudData.carlos.length + cloudData.nelly.length;
+      const totalMerged = merged.carlos.length    + merged.nelly.length;
       if (totalMerged > totalCloud) {
+        console.log('[sync] subiendo datos nuevos a Firestore...');
         await fbStore.doc(`familias/${FAMILIA_DOC_ID}`).set(merged);
         showToast('Datos sincronizados con la nube ✓');
+        console.log('[sync] subida completada');
+      } else {
+        console.log('[sync] sin cambios que subir');
       }
       setSyncDot('synced');
       return merged;
     }
     // Documento no existe: subir datos locales
+    console.log('[sync] documento no existe, subiendo local...');
     await fbStore.doc(`familias/${FAMILIA_DOC_ID}`).set(normalizeData(db));
     showToast('Datos guardados en la nube');
     setSyncDot('synced');
     return null;
   } catch(e) {
+    console.error('[sync] error:', e);
     setSyncDot('');
     return null;
   }
