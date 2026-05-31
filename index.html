@@ -536,13 +536,25 @@ async function loadFromFirestore() {
   try {
     setSyncDot('syncing');
     const snap = await fbStore.doc(`familias/${FAMILIA_DOC_ID}`).get();
-    setSyncDot('synced');
-    if (snap.exists()) return normalizeData(snap.data());
-    // Primera vez: sube los datos locales que ya existen
+    if (snap.exists()) {
+      const cloudData = normalizeData(snap.data());
+      const totalCloud = cloudData.carlos.length + cloudData.nelly.length;
+      const totalLocal = db.carlos.length + db.nelly.length;
+      // Si Firestore está vacío pero local tiene datos, subir local a la nube
+      if (totalCloud === 0 && totalLocal > 0) {
+        await fbStore.doc(`familias/${FAMILIA_DOC_ID}`).set(normalizeData(db));
+        showToast('Datos subidos a la nube ✓');
+        setSyncDot('synced');
+        return null;
+      }
+      setSyncDot('synced');
+      return cloudData;
+    }
+    // Documento no existe: subir datos locales
     await fbStore.doc(`familias/${FAMILIA_DOC_ID}`).set(normalizeData(db));
     showToast('Datos guardados en la nube');
     setSyncDot('synced');
-    return null; // ya tiene db cargada
+    return null;
   } catch(e) {
     setSyncDot('');
     return null;
@@ -580,7 +592,7 @@ function initFirebase() {
 }
 
 // ============================================================
-const APP_VERSION = 'v11';
+const APP_VERSION = 'v12';
 const KEY = 'mipeso_v2';
 const IDB_NAME = 'mipeso_db';
 const IDB_STORE = 'app_state';

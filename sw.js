@@ -1,4 +1,4 @@
-const CACHE = 'mipeso-v11';
+const CACHE = 'mipeso-v12';
 const BASE = self.location.pathname.replace('/sw.js', '');
 const FILES = [
   BASE + '/',
