@@ -531,6 +531,20 @@ function setSyncDot(state) {
   dot.className = 'sync-dot' + (state === 'synced' ? ' synced' : state === 'syncing' ? ' syncing' : '');
 }
 
+function mergePersonData(localArr, cloudArr) {
+  const map = {};
+  for (const item of cloudArr) map[item.f] = item;
+  for (const item of localArr) map[item.f] = item; // local gana en fechas duplicadas
+  return Object.values(map).sort((a, b) => a.f.localeCompare(b.f));
+}
+
+function mergeData(localData, cloudData) {
+  return {
+    carlos: mergePersonData(localData.carlos, cloudData.carlos),
+    nelly:  mergePersonData(localData.nelly,  cloudData.nelly)
+  };
+}
+
 async function loadFromFirestore() {
   if (!fbStore) return null;
   try {
@@ -538,17 +552,16 @@ async function loadFromFirestore() {
     const snap = await fbStore.doc(`familias/${FAMILIA_DOC_ID}`).get();
     if (snap.exists()) {
       const cloudData = normalizeData(snap.data());
-      const totalCloud = cloudData.carlos.length + cloudData.nelly.length;
-      const totalLocal = db.carlos.length + db.nelly.length;
-      // Si Firestore está vacío pero local tiene datos, subir local a la nube
-      if (totalCloud === 0 && totalLocal > 0) {
-        await fbStore.doc(`familias/${FAMILIA_DOC_ID}`).set(normalizeData(db));
-        showToast('Datos subidos a la nube ✓');
-        setSyncDot('synced');
-        return null;
+      const merged = mergeData(db, cloudData);
+      const totalCloud   = cloudData.carlos.length + cloudData.nelly.length;
+      const totalMerged  = merged.carlos.length    + merged.nelly.length;
+      // Si el merge agregó registros que no estaban en la nube, subir
+      if (totalMerged > totalCloud) {
+        await fbStore.doc(`familias/${FAMILIA_DOC_ID}`).set(merged);
+        showToast('Datos sincronizados con la nube ✓');
       }
       setSyncDot('synced');
-      return cloudData;
+      return merged;
     }
     // Documento no existe: subir datos locales
     await fbStore.doc(`familias/${FAMILIA_DOC_ID}`).set(normalizeData(db));
