@@ -385,6 +385,62 @@ input {
 .sync-dot.synced  { background: #10b981; }
 .sync-dot.syncing { background: #f59e0b; animation: pulse-dot 1.2s infinite; }
 @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+/* === SYNC TOAST (paso a paso) === */
+.sync-toast {
+  position: fixed; top: 0; left: 0; right: 0;
+  background: var(--blue); color: white;
+  padding: 14px 20px;
+  font-size: 17px; font-weight: 600;
+  display: flex; align-items: center; gap: 12px;
+  transform: translateY(-100%);
+  transition: transform .3s ease;
+  z-index: 1100;
+  box-shadow: var(--shadow-md);
+}
+.sync-toast.show { transform: translateY(0); }
+.sync-toast.error { background: var(--red); }
+.sync-toast.ok    { background: var(--green); }
+.sync-spinner {
+  width: 20px; height: 20px; border-radius: 50%;
+  border: 3px solid rgba(255,255,255,.3);
+  border-top-color: white;
+  animation: spin .8s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.sync-icon { font-size: 20px; flex-shrink: 0; }
+
+/* === PESTAÑA ERRORES === */
+.tab-badge {
+  display: inline-block;
+  background: var(--red); color: white;
+  border-radius: 100px; font-size: 12px; font-weight: 700;
+  padding: 1px 7px; margin-left: 5px;
+  vertical-align: middle; line-height: 1.6;
+}
+.error-list { display: flex; flex-direction: column; gap: 12px; }
+.error-card {
+  background: white; border-radius: var(--radius);
+  padding: 16px 18px; box-shadow: var(--shadow);
+  border-left: 4px solid var(--red);
+}
+.error-card.warn { border-left-color: #f59e0b; }
+.error-ts   { font-size: 13px; color: var(--gray-400); margin-bottom: 6px; }
+.error-ctx  { font-size: 16px; font-weight: 700; color: var(--gray-900); margin-bottom: 4px; }
+.error-msg  { font-size: 15px; color: var(--red); word-break: break-word; }
+.error-card.warn .error-msg { color: #92400e; }
+.btn-clear-errors {
+  width: 100%; padding: 14px; margin-top: 8px;
+  background: var(--gray-100); color: var(--gray-600);
+  border: none; border-radius: var(--radius);
+  font-size: 16px; font-weight: 700; cursor: pointer;
+}
+.no-errors {
+  text-align: center; padding: 48px 20px;
+  color: var(--gray-400); font-size: 17px;
+}
+.no-errors .icon { font-size: 48px; margin-bottom: 12px; }
 </style>
 </head>
 <body>
@@ -401,6 +457,7 @@ input {
       <button class="tab active" onclick="showTab('registrar')">Registrar</button>
       <button class="tab" onclick="showTab('progreso')">Progreso</button>
       <button class="tab" onclick="showTab('historial')">Historial</button>
+      <button class="tab" id="tab-btn-errores" onclick="showTab('errores')">Errores</button>
     </div>
   </div>
 
@@ -474,8 +531,21 @@ input {
       <div id="hist-content"></div>
     </div>
 
+    <!-- TAB: ERRORES -->
+    <div id="tab-errores" class="section">
+      <div id="errores-content">
+        <div class="no-errors"><div class="icon">✅</div>Sin errores registrados</div>
+      </div>
+    </div>
+
   </div><!-- /content -->
 </div><!-- /app -->
+
+<!-- SYNC TOAST -->
+<div class="sync-toast" id="sync-toast">
+  <div class="sync-spinner" id="sync-spinner"></div>
+  <span id="sync-toast-msg">Conectando con Firestore...</span>
+</div>
 
 <div class="toast" id="toast"></div>
 <div class="modal-backdrop" id="edit-modal" role="dialog" aria-modal="true" aria-labelledby="edit-modal-title">
@@ -521,6 +591,80 @@ const FAMILIA_DOC_ID = "guzman-familia-peso-2024";
 
 let fbStore = null;
 
+// === LOG DE ERRORES ===
+const errorLog = [];
+
+function logError(contexto, error, tipo) {
+  const entry = {
+    ts: new Date().toLocaleString('es-MX'),
+    contexto,
+    msg: error && error.message ? error.message : String(error),
+    code: error && error.code ? error.code : '',
+    tipo: tipo || 'error'
+  };
+  errorLog.unshift(entry);
+  renderErrors();
+  updateErrorBadge();
+}
+
+function updateErrorBadge() {
+  const btn = document.getElementById('tab-btn-errores');
+  if (!btn) return;
+  const old = btn.querySelector('.tab-badge');
+  if (old) old.remove();
+  if (errorLog.length > 0) {
+    const badge = document.createElement('span');
+    badge.className = 'tab-badge';
+    badge.textContent = errorLog.length;
+    btn.appendChild(badge);
+  }
+}
+
+function renderErrors() {
+  const el = document.getElementById('errores-content');
+  if (!el) return;
+  if (!errorLog.length) {
+    el.innerHTML = '<div class="no-errors"><div class="icon">✅</div>Sin errores registrados</div>';
+    return;
+  }
+  const items = errorLog.map(e => `
+    <div class="error-card ${e.tipo === 'warn' ? 'warn' : ''}">
+      <div class="error-ts">${e.ts}</div>
+      <div class="error-ctx">${e.contexto}</div>
+      <div class="error-msg">${e.msg}${e.code ? ' (' + e.code + ')' : ''}</div>
+    </div>`).join('');
+  el.innerHTML = `<div class="error-list">${items}</div>
+    <button class="btn-clear-errors" onclick="clearErrors()">Limpiar errores</button>`;
+}
+
+function clearErrors() {
+  errorLog.length = 0;
+  renderErrors();
+  updateErrorBadge();
+}
+
+// === SYNC TOAST (paso a paso) ===
+let syncToastTimer = null;
+
+function showSyncToast(msg, tipo) {
+  const toast = document.getElementById('sync-toast');
+  const msgEl = document.getElementById('sync-toast-msg');
+  const spinner = document.getElementById('sync-spinner');
+  if (!toast || !msgEl) return;
+  if (syncToastTimer) { clearTimeout(syncToastTimer); syncToastTimer = null; }
+  msgEl.textContent = msg;
+  toast.className = 'sync-toast show' + (tipo === 'error' ? ' error' : tipo === 'ok' ? ' ok' : '');
+  spinner.style.display = (tipo === 'error' || tipo === 'ok') ? 'none' : 'block';
+  if (tipo === 'ok' || tipo === 'error') {
+    syncToastTimer = setTimeout(() => { toast.classList.remove('show'); }, 3500);
+  }
+}
+
+function hideSyncToast() {
+  const toast = document.getElementById('sync-toast');
+  if (toast) toast.classList.remove('show');
+}
+
 function isFirebaseConfigured() {
   return !FIREBASE_CONFIG.apiKey.startsWith('REEMPLAZA');
 }
@@ -534,7 +678,7 @@ function setSyncDot(state) {
 function mergePersonData(localArr, cloudArr) {
   const map = {};
   for (const item of cloudArr) map[item.f] = item;
-  for (const item of localArr) map[item.f] = item; // local gana en fechas duplicadas
+  for (const item of localArr) map[item.f] = item;
   return Object.values(map).sort((a, b) => a.f.localeCompare(b.f));
 }
 
@@ -548,37 +692,41 @@ function mergeData(localData, cloudData) {
 async function loadFromFirestore() {
   if (!fbStore) return null;
   try {
+    showSyncToast('Conectando con Firestore...');
     setSyncDot('syncing');
-    console.log('[sync] leyendo Firestore...');
-    console.log('[sync] local carlos:', db.carlos.length, 'nelly:', db.nelly.length);
+
     const snap = await fbStore.doc(`familias/${FAMILIA_DOC_ID}`).get();
-    console.log('[sync] doc existe:', snap.exists);
+
     if (snap.exists) {
+      showSyncToast('Leyendo datos de la nube...');
       const cloudData = normalizeData(snap.data());
-      console.log('[sync] nube carlos:', cloudData.carlos.length, 'nelly:', cloudData.nelly.length);
       const merged = mergeData(db, cloudData);
-      console.log('[sync] merged carlos:', merged.carlos.length, 'nelly:', merged.nelly.length);
       const totalCloud  = cloudData.carlos.length + cloudData.nelly.length;
       const totalMerged = merged.carlos.length    + merged.nelly.length;
+
       if (totalMerged > totalCloud) {
-        console.log('[sync] subiendo datos nuevos a Firestore...');
+        showSyncToast('Subiendo datos nuevos a la nube...');
         await fbStore.doc(`familias/${FAMILIA_DOC_ID}`).set(merged);
-        showToast('Datos sincronizados con la nube ✓');
-        console.log('[sync] subida completada');
+        showSyncToast('¡Datos sincronizados con la nube! ✓', 'ok');
       } else {
-        console.log('[sync] sin cambios que subir');
+        showSyncToast('Datos al día ✓', 'ok');
       }
+
       setSyncDot('synced');
       return merged;
     }
+
     // Documento no existe: subir datos locales
-    console.log('[sync] documento no existe, subiendo local...');
+    showSyncToast('Guardando datos en la nube por primera vez...');
     await fbStore.doc(`familias/${FAMILIA_DOC_ID}`).set(normalizeData(db));
-    showToast('Datos guardados en la nube');
+    showSyncToast('Datos guardados en la nube ✓', 'ok');
     setSyncDot('synced');
     return null;
+
   } catch(e) {
-    console.error('[sync] error:', e);
+    const msg = e && e.message ? e.message : String(e);
+    showSyncToast('Error de sincronización — ver pestaña Errores', 'error');
+    logError('Lectura de Firestore al iniciar', e);
     setSyncDot('');
     return null;
   }
@@ -591,6 +739,7 @@ async function saveToFirestore(data) {
     await fbStore.doc(`familias/${FAMILIA_DOC_ID}`).set(normalizeData(data));
     setSyncDot('synced');
   } catch(e) {
+    logError('Guardado en Firestore', e);
     setSyncDot('');
   }
 }
@@ -610,12 +759,13 @@ function initFirebase() {
       if (active && active.textContent.trim() === 'Progreso') renderProg();
     });
   } catch(e) {
-    console.warn('Firebase init error:', e);
+    showSyncToast('Error al iniciar Firebase — ver pestaña Errores', 'error');
+    logError('Inicialización de Firebase', e);
   }
 }
 
 // ============================================================
-const APP_VERSION = 'v12';
+const APP_VERSION = 'v13';
 const KEY = 'mipeso_v2';
 const IDB_NAME = 'mipeso_db';
 const IDB_STORE = 'app_state';
@@ -758,15 +908,17 @@ function fmtShort(dateStr) {
 
 /* ---- TABS ---- */
 function showTab(t) {
-  ['registrar','progreso','historial'].forEach(id => {
+  ['registrar','progreso','historial','errores'].forEach(id => {
     document.getElementById('tab-'+id).classList.remove('active');
   });
-  document.querySelectorAll('.tab').forEach((b,i) => {
-    b.classList.toggle('active', ['registrar','progreso','historial'][i] === t);
+  document.querySelectorAll('.tab').forEach(b => {
+    const target = b.getAttribute('onclick').match(/'([^']+)'/)?.[1];
+    b.classList.toggle('active', target === t);
   });
   document.getElementById('tab-'+t).classList.add('active');
   if (t === 'progreso') renderProg();
   if (t === 'historial') renderHist();
+  if (t === 'errores') renderErrors();
 }
 
 /* ---- PERSON SELECT ---- */
