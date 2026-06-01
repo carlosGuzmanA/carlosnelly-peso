@@ -78,19 +78,19 @@
   }
   .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px; }
   .header h1 {
-    font-size: 22px; font-weight: 700; color: var(--fg); letter-spacing: -.4px;
+    font-size: 32px; font-weight: 700; color: var(--fg); letter-spacing: -.4px;
   }
   .header h1 span { font-size: 12px; font-weight: 500; color: var(--fg-subtle); vertical-align: middle; margin-left: 6px; }
 
   /* === TABS === */
   .tabs { display: flex; gap: 0; margin-top: 2px; }
   .tab {
-    flex: 1; padding: 12px 6px; font-size: 15px; font-weight: 500;
+    flex: 1; padding: 12px 6px; font-size: 20px; font-weight: 500;
     text-align: center; cursor: pointer; border: none; background: none;
     color: var(--fg-muted); border-bottom: 2px solid transparent;
     transition: color .15s, border-color .15s;
     -webkit-appearance: none; appearance: none;
-    min-height: 48px;
+    min-height: 56px;
   }
   .tab:hover { color: var(--fg); }
   .tab.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; }
@@ -129,8 +129,8 @@
   .avatar.c { background: var(--primary-muted); color: var(--primary); border: 1px solid var(--primary-border); }
   .avatar.n { background: var(--pink-muted);    color: var(--pink);    border: 1px solid var(--pink-border); }
 
-  .person-btn .pname { font-size: 20px; font-weight: 600; color: var(--fg); }
-  .person-btn .page  { font-size: 14px; color: var(--fg-muted); margin-top: 2px; }
+  .person-btn .pname { font-size: 22px; font-weight: 600; color: var(--fg); }
+  .person-btn .page  { font-size: 16px; color: var(--fg-muted); margin-top: 2px; }
 
   /* === LAST RECORD CARD === */
   .last-card {
@@ -144,13 +144,13 @@
     font-size: 11px; color: var(--fg-subtle); font-weight: 500;
     text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px;
   }
-  .last-card .lc-weight { font-size: 44px; font-weight: 700; color: var(--fg); line-height: 1; letter-spacing: -1px; }
+  .last-card .lc-weight { font-size: 48px; font-weight: 700; color: var(--fg); line-height: 1; letter-spacing: -1px; }
   .last-card .lc-date   { font-size: 13px; color: var(--fg-muted); margin-top: 5px; }
 
   .badge {
     padding: 5px 12px; border-radius: var(--radius-xs);
-    font-size: 14px; font-weight: 600; border: 1px solid transparent;
-    min-width: 72px; text-align: center; display: inline-block;
+    font-size: 22px; font-weight: 600; border: 1px solid transparent;
+    min-width: 80px; text-align: center; display: inline-block;
   }
   .badge.down { background: var(--success-muted); color: var(--success); border-color: var(--success-border); }
   .badge.up   { background: var(--danger-muted);  color: var(--danger);  border-color: var(--danger-border); }
@@ -159,16 +159,16 @@
   /* === FORM === */
   .form-group { margin-bottom: 18px; }
   .form-group label {
-    display: block; font-size: 14px; font-weight: 500;
+    display: block; font-size: 22px; font-weight: 500;
     color: var(--fg-muted); margin-bottom: 7px;
   }
   .form-group input {
-    width: 100%; padding: 13px 14px; font-size: 20px; font-weight: 500;
+    width: 100%; padding: 13px 14px; font-size: 22px; font-weight: 500;
     border: 1px solid var(--border); border-radius: var(--radius-sm);
     background: var(--bg); color: var(--fg);
     -webkit-appearance: none; appearance: none;
     transition: border-color .15s, box-shadow .15s;
-    min-height: 54px;
+    min-height: 56px;
   }
   .form-group input:focus {
     outline: none; border-color: var(--border-focus);
@@ -180,10 +180,10 @@
   .btn-save {
     width: 100%; padding: 16px; background: var(--primary);
     color: var(--primary-fg); border: none; border-radius: var(--radius-sm);
-    font-size: 18px; font-weight: 600; cursor: pointer;
+    font-size: 22px; font-weight: 600; cursor: pointer;
     transition: background .15s, box-shadow .15s, transform .1s;
     -webkit-appearance: none; appearance: none;
-    min-height: 54px; margin-top: 6px;
+    min-height: 56px; margin-top: 6px;
     box-shadow: 0 1px 2px rgba(37,99,235,.3);
   }
   .btn-save:hover  { background: var(--primary-hov); }
@@ -236,17 +236,17 @@
   }
   .hist-item:last-child { border-bottom: none; }
   .hist-item:active { background: var(--bg-subtle); }
-  .hist-date  { font-size: 20px; font-weight: 600; color: var(--fg); }
+  .hist-date  { font-size: 22px; font-weight: 600; color: var(--fg); }
   .hist-sub   { font-size: 13px; color: var(--fg-muted); margin-top: 2px; }
   .hist-right { text-align: right; }
-  .hist-peso  { font-size: 20px; font-weight: 700; color: var(--fg); }
+  .hist-peso  { font-size: 22px; font-weight: 700; color: var(--fg); }
   .hist-diff  { font-size: 13px; font-weight: 600; margin-top: 2px; }
   .hist-edit {
     display: inline-flex; align-items: center; justify-content: center;
-    width: 36px; height: 36px;
+    width: 44px; height: 44px;
     border: 1px solid var(--border); border-radius: var(--radius-xs);
     background: var(--bg); color: var(--fg-muted);
-    font-size: 16px; cursor: pointer;
+    font-size: 22px; cursor: pointer;
     -webkit-appearance: none; appearance: none;
     transition: background .1s, border-color .1s;
   }
@@ -315,8 +315,8 @@
   .btn-install {
     padding: 10px 16px; background: var(--primary); color: white;
     border: none; border-radius: var(--radius-xs);
-    font-size: 15px; font-weight: 600; cursor: pointer; white-space: nowrap;
-    min-height: 44px;
+    font-size: 22px; font-weight: 600; cursor: pointer; white-space: nowrap;
+    min-height: 56px;
   }
 
   /* === MOTIVATIONAL === */
@@ -734,7 +734,7 @@ function initFirebase() {
 }
 
 // ============================================================
-const APP_VERSION = 'v17';
+const APP_VERSION = 'v18';
 const KEY = 'mipeso_v2';
 const IDB_NAME = 'mipeso_db';
 const IDB_STORE = 'app_state';
